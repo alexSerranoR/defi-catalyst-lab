@@ -1,34 +1,28 @@
-# Findings
+## Missing GitHub data and centralised exchanges
 
-## Missing GitHub information
+### Problem
 
-While exporting data from the first five protocols returned by the DeFiLlama API, most of the `github` fields had a `null` value.
+The first version of the script selected the first five protocols returned by the DeFiLlama API.
 
-The first results included Binance CEX, OKX, Bitfinex, Lido and Bybit. Four of these are centralised exchanges, while Lido is a decentralised protocol.
+Several of these projects were centralised exchanges, such as Binance, OKX, Bitfinex and Bybit. Most of them returned a `null` value in the `github` field.
 
-Lido included a GitHub organisation:
+This was not a Python error. It indicated that DeFiLlama did not provide GitHub information for those projects through the protocol endpoint.
 
-```json
-"github": [
-    "lidofinance"
-]
-```
+A second issue was discovered after filtering only by GitHub availability: projects categorised as centralised exchanges could still appear if they had a registered GitHub organisation. Robinhood was an example of this situation.
 
-The centralised exchanges returned:
+### Solution
 
-```json
-"github": null
-```
+The script was updated to apply two filters:
 
-### Possible explanation
+1. Protocols without GitHub information are skipped.
+2. Protocols whose category is `CEX` are skipped.
 
-Centralised exchanges normally do not publish the source code of their main platforms. Decentralised protocols are more likely to publish their smart contracts and development repositories.
+The program continues checking projects until five protocols that satisfy both conditions have been collected.
 
-### Possible improvement
+The category filter is applied before requesting the complete protocol information whenever possible. This avoids unnecessary API requests and improves execution time.
 
-Future versions of the script could:
+### Result
 
-* Filter out centralised exchanges.
-* Select protocols by category.
-* Select only protocols with available GitHub information.
-* Record missing values explicitly.
+The generated JSON dataset now contains five non-CEX protocols with available GitHub information.
+
+This produces a dataset that is more relevant for analysing open-source DeFi projects. However, GitHub availability alone should not be considered proof that a project is decentralised. Additional indicators, such as governance, smart-contract architecture and contributor activity, may be required in future analyses.
